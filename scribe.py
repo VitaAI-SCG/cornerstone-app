@@ -1,8 +1,8 @@
-# scribe.py - The Scribe's Snowfall (v2.2 - Timestamp Fix)
+# scribe.py - The Scribe's Snowfall (v2.3 - Final)
 import json
 import urllib.request
 import urllib.parse
-from datetime import datetime, timezone # Import the timezone object
+from datetime import datetime, timezone
 
 CODEX_FILE = "codex.json"
 OUTPUT_FILE = "daily_folio.json"
@@ -16,7 +16,8 @@ def fetch_passage_text(passage, translation):
         with urllib.request.urlopen(url) as response:
             if response.status == 200:
                 data = json.loads(response.read().decode('utf-8'))
-                return data.get("text", "Passage not found.")
+                # Return clean text, replacing the API's newline characters
+                return data.get("text", "Passage not found.").strip().replace("\n", " ")
             return "Passage not found."
     except Exception as e:
         print(f"Error fetching {passage} ({translation}): {e}")
@@ -30,6 +31,7 @@ def main():
         codex = json.load(f)
 
     day_of_year = datetime.now().timetuple().tm_yday
+    # Ensure our key loops through the available entries in the codex
     theme_key = str((day_of_year - 1) % len(codex) + 1)
     daily_theme_data = codex.get(theme_key)
 
@@ -45,9 +47,8 @@ def main():
         }
         passages_with_text.append(passage_data)
 
-    # Assemble the final folio for the day
     daily_folio = {
-        "folio_generated_utc": datetime.now(timezone.utc).isoformat(), # ADDED THIS LINE
+        "folio_generated_utc": datetime.now(timezone.utc).isoformat(),
         "date": datetime.now().strftime("%B %d, %Y"),
         "theme": daily_theme_data.get("theme"),
         "passages": passages_with_text,
