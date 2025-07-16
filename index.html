@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scribe's Snowfall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --text-color: rgba(255, 255, 255, 0.9); --bg-color: #1a1a1a; --panel-color: rgba(0,0,0,0.3); --border-color: rgba(255,255,255,0.1); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        #background-video { position: fixed; right: 0; bottom: 0; min-width: 100%; min-height: 100%; z-index: -1; filter: brightness(0.4) blur(4px); transform: scale(1.1); }
+        .font-serif { font-family: 'Crimson Pro', serif; }
+        .scripture-text p { margin-bottom: 1rem; }
+        .note-button { background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; transition: all 0.2s ease; cursor: pointer; }
+        .note-button.active, .note-button:hover { background-color: rgba(255,255,255,0.9); color: #000; }
+    </style>
+</head>
+<body class="flex justify-center p-4 sm:p-8">
+    <video autoplay muted loop playsinline id="background-video">
+        <source src="https://static.pexels.com/lib/videos/free-videos.mp4" type="video/mp4">
+    </video>
+    <main id="folio-content" class="w-full max-w-4xl opacity-0 transition-opacity duration-1000">
+        <header class="text-center border-b border-gray-500/20 pb-4 mb-8">
+            <h1 id="folio-theme" class="text-3xl sm:text-4xl font-serif font-semibold">Loading Today's Reading...</h1>
+            <p id="folio-date" class="text-lg text-gray-400"></p>
+        </header>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            <div id="scripture-panel" class="font-serif text-xl sm:text-2xl leading-loose"></div>
+            <div id="notes-panel">
+                <h2 class="text-2xl font-serif font-semibold mb-4">The Scribe's Notes</h2>
+                <div id="notes-selector" class="flex flex-wrap gap-2 mb-4"></div>
+                <div id="note-content" class="p-6 bg-black/30 rounded-lg border border-white/10 min-h-[200px]"></div>
+            </div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const response = await fetch(`daily_folio.json?v=${new Date().getTime()}`);
+                if (!response.ok) throw new Error("Could not load today's folio.");
+                const data = await response.json();
+                document.getElementById('folio-theme').textContent = data.theme;
+                document.getElementById('folio-date').textContent = data.date;
+                const scripturePanel = document.getElementById('scripture-panel');
+                scripturePanel.innerHTML = '';
+                data.passages.forEach(p => {
+                    const passageDiv = document.createElement('div');
+                    passageDiv.innerHTML = `<h3 class="text-2xl font-semibold mb-2">${p.reference}</h3><div class="scripture-text text-white/80">${p.text.replace(/\\n/g, '<br>')}</div>`;
+                    scripturePanel.appendChild(passageDiv);
+                });
+                const notesSelector = document.getElementById('notes-selector');
+                const noteContent = document.getElementById('note-content');
+                const notes = data.notes;
+                const noteKeys = { context: "Context", reflection: "Reflection", cross_references: "Cross-References" };
+                Object.keys(noteKeys).forEach(key => {
+                    if (notes[key]) {
+                        const button = document.createElement('button');
+                        button.textContent = noteKeys[key];
+                        button.className = 'note-button';
+                        button.addEventListener('click', e => {
+                            let content = notes[key];
+                            if (Array.isArray(content)) { noteContent.innerHTML = `<ul>${content.map(item => `<li class='mb-1'>${item}</li>`).join('')}</ul>`;
+                            } else { noteContent.textContent = content; }
+                            document.querySelectorAll(".note-button").forEach(b => b.classList.remove("active"));
+                            e.target.classList.add("active");
+                        });
+                        notesSelector.appendChild(button);
+                    }
+                });
+                const firstButton = notesSelector.querySelector('button');
+                if (firstButton) { firstButton.click(); }
+                document.getElementById('folio-content').style.opacity = 1;
+            } catch (error) {
+                document.getElementById('folio-theme').textContent = 'Awaiting the Scribe...';
+                document.getElementById('folio-date').textContent = 'The first folio will be prepared shortly after the project is published.';
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
