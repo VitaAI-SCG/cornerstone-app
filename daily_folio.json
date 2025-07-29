@@ -1,26 +1,26 @@
 {
-    "folio_generated_utc": "2025-07-28T07:18:25.348908+00:00",
-    "date": "July 28, 2025",
-    "theme": "On The Shepherd & The Flock",
+    "folio_generated_utc": "2025-07-29T07:00:17.595539+00:00",
+    "date": "July 29, 2025",
+    "theme": "On Light & Darkness",
     "passages": [
         {
-            "reference": "Psalm 23",
-            "kjv_text": "The LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters. He restoreth my soul: he leadeth me in the paths of righteousness for his name\u2019s sake. Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me. Thou preparest a table before me in the presence of mine enemies: thou anointest my head with oil; my cup runneth over. Surely goodness and mercy shall follow me all the days of my life: and I will dwell in the house of the LORD for ever.",
-            "web_text": "Yahweh is my shepherd: I shall lack nothing. He makes me lie down in green pastures. He leads me beside still waters. He restores my soul. He guides me in the paths of righteousness for his name\u2019s sake. Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me. Your rod and your staff, they comfort me. You prepare a table before me in the presence of my enemies. You anoint my head with oil. My cup runs over. Surely goodness and loving kindness shall follow me all the days of my life, and I will dwell in Yahweh\u2019s house forever."
+            "reference": "Isaiah 9:2",
+            "kjv_text": "The people that walked in darkness have seen a great light: they that dwell in the land of the shadow of death, upon them hath the light shined.",
+            "web_text": "The people who walked in darkness have seen a great light. Those who lived in the land of the shadow of death, on them the light has shined."
         },
         {
-            "reference": "John 10:11-15",
-            "kjv_text": "I am the good shepherd: the good shepherd giveth his life for the sheep. But he that is an hireling, and not the shepherd, whose own the sheep are not, seeth the wolf coming, and leaveth the sheep, and fleeth: and the wolf catcheth them, and scattereth the sheep. The hireling fleeth, because he is an hireling, and careth not for the sheep. I am the good shepherd, and know my sheep, and am known of mine. As the Father knoweth me, even so know I the Father: and I lay down my life for the sheep.",
-            "web_text": "I am the good shepherd. The good shepherd lays down his life for the sheep.   He who is a hired hand, and not a shepherd, who doesn\u2019t own the sheep, sees the wolf coming, leaves the sheep, and flees. The wolf snatches the sheep, and scatters them.   The hired hand flees because he is a hired hand, and doesn\u2019t care for the sheep.   I am the good shepherd. I know my own, and I\u2019m known by my own;   even as the Father knows me, and I know the Father. I lay down my life for the sheep."
+            "reference": "John 8:12",
+            "kjv_text": "Then spake Jesus again unto them, saying, I am the light of the world: he that followeth me shall not walk in darkness, but shall have the light of life.",
+            "web_text": "Again, therefore, Jesus spoke to them, saying, \u201cI am the light of the world. He who follows me will not walk in the darkness, but will have the light of life.\u201d"
         }
     ],
     "notes": {
-        "context": "Psalm 23 is the most famous depiction of God as a personal, caring shepherd who provides, protects, and guides. Jesus explicitly claims this title for himself in John's Gospel, contrasting the 'good shepherd' who lays down his life for the sheep with the 'hired hand' who flees from danger.",
-        "reflection": "The Shepherd knows his sheep by name. In a world of noise and anonymity, what does it mean to be known and cared for by a God who would lay down his life for us?",
+        "context": "Isaiah prophesies a great light dawning for those living in deep darkness, a promise of hope and liberation. Jesus makes the radical declaration, 'I am the light of the world,' positioning himself as the fulfillment of this ancient prophecy and the ultimate source of spiritual illumination.",
+        "reflection": "Light exposes, guides, and gives life. How can we not only walk in the light, but also reflect it into the dark corners of the world around us?",
         "cross_references": [
-            "Isaiah 40:11",
-            "Ezekiel 34:11-16",
-            "1 Peter 5:2-4"
+            "Matthew 5:14-16",
+            "Ephesians 5:8",
+            "1 John 1:5-7"
         ]
     }
 }
