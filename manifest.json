@@ -1,0 +1,8 @@
+{
+  "name": "Cornerstone Bible",
+  "short_name": "Cornerstone",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5e8c7",
+  "theme_color": "#f5e8c7"
+}

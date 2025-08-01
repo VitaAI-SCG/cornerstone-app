@@ -1,0 +1,22 @@
+{
+  "Genesis 1:1-5": ["Psalm 33:6", "Colossians 1:16-17", "2 Corinthians 5:17"],
+  "John 1:1-5": ["Psalm 33:6", "Colossians 1:16-17", "2 Corinthians 5:17"],
+  "Genesis 15:1-6": ["Hebrews 11:1", "James 1:6", "Romans 4:20-21"],
+  "Mark 9:14-24": ["Hebrews 11:1", "James 1:6", "Romans 4:20-21"],
+  "Isaiah 1:18": ["Psalm 51:7", "Titus 3:5-7", "Romans 3:23-24"],
+  "Ephesians 2:8-9": ["Psalm 51:7", "Titus 3:5-7", "Romans 3:23-24"],
+  "Deuteronomy 6:4-9": ["Matthew 22:37-40", "Ezekiel 36:26-27", "Romans 8:4"],
+  "Galatians 5:22-23": ["Matthew 22:37-40", "Ezekiel 36:26-27", "Romans 8:4"],
+  "Proverbs 9:10": ["Job 28:28", "Psalm 111:10", "James 3:17"],
+  "1 Corinthians 1:22-25": ["Job 28:28", "Psalm 111:10", "James 3:17"],
+  "Job 1:20-22": ["2 Corinthians 4:17", "1 Peter 1:6-7", "James 1:2-4"],
+  "Romans 5:3-5": ["2 Corinthians 4:17", "1 Peter 1:6-7", "James 1:2-4"],
+  "Micah 6:8": ["Proverbs 22:4", "Matthew 23:12", "1 Peter 5:5-6"],
+  "Philippians 2:3-8": ["Proverbs 22:4", "Matthew 23:12", "1 Peter 5:5-6"],
+  "Amos 5:24": ["Isaiah 1:17", "Proverbs 31:8-9", "Luke 4:18"],
+  "Matthew 25:34-40": ["Isaiah 1:17", "Proverbs 31:8-9", "Luke 4:18"],
+  "Psalm 23": ["Isaiah 40:11", "Ezekiel 34:11-16", "1 Peter 5:2-4"],
+  "John 10:11-15": ["Isaiah 40:11", "Ezekiel 34:11-16", "1 Peter 5:2-4"],
+  "Isaiah 9:2": ["Matthew 5:14-16", "Ephesians 5:8", "1 John 1:5-7"],
+  "John 8:12": ["Matthew 5:14-16", "Ephesians 5:8", "1 John 1:5-7"]
+}

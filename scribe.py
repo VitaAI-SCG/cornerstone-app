@@ -1,64 +1,87 @@
-# scribe.py - The Scribe's Snowfall (v2.3 - Final)
+import os
 import json
-import urllib.request
-import urllib.parse
-from datetime import datetime, timezone
+import random
+import datetime
+import google.generativeai as genai
 
-CODEX_FILE = "codex.json"
-OUTPUT_FILE = "daily_folio.json"
-BIBLE_API_URL = "https://bible-api.com"
+# A list of themes for the AI to choose from.
+THEMES = [
+    "Grace in Failure", "The Nature of Forgiveness", "Finding Strength in Humility",
+    "Leadership and Servanthood", "The Power of Prayer", "Love for One's Neighbor",
+    "Dealing with Anxiety", "The Meaning of Faith", "Parables of the Kingdom",
+    "Justice and Righteousness", "The Promise of Redemption", "The Cost of Discipleship",
+    "Finding Joy in Suffering", "The Wisdom of Listening", "The Nature of True Wealth",
+    "Creation and Stewardship", "Conflict and Peacemaking", "Light in the Darkness",
+    "The Shepherd and His Flock", "The Coming of the Holy Spirit"
+]
 
-def fetch_passage_text(passage, translation):
-    """Fetches the full text of a scripture passage in a specific translation."""
+# --- Main function to generate the folio ---
+def generate_daily_folio():
+    """
+    Generates a daily folio JSON file using a generative AI model.
+    """
     try:
-        url_encoded_passage = urllib.parse.quote(passage)
-        url = f"{BIBLE_API_URL}/{url_encoded_passage}?translation={translation}"
-        with urllib.request.urlopen(url) as response:
-            if response.status == 200:
-                data = json.loads(response.read().decode('utf-8'))
-                # Return clean text, replacing the API's newline characters
-                return data.get("text", "Passage not found.").strip().replace("\n", " ")
-            return "Passage not found."
-    except Exception as e:
-        print(f"Error fetching {passage} ({translation}): {e}")
-        return "Error retrieving scripture."
+        # Configure the generative AI model with the API key from GitHub Secrets
+        api_key = os.environ.get('API_KEY')
+        if not api_key:
+            raise ValueError("API_KEY environment variable not set.")
+        genai.configure(api_key=api_key)
 
-def main():
-    """The main function for the daily Scribe task."""
-    print(f"[{datetime.now().isoformat()}] The Scribe begins its daily work...")
-
-    with open(CODEX_FILE, 'r', encoding='utf-8') as f:
-        codex = json.load(f)
-
-    day_of_year = datetime.now().timetuple().tm_yday
-    # Ensure our key loops through the available entries in the codex
-    theme_key = str((day_of_year - 1) % len(codex) + 1)
-    daily_theme_data = codex.get(theme_key)
-
-    if not daily_theme_data:
-        print(f"Error: No theme found for key {theme_key}"); return
-
-    passages_with_text = []
-    for passage_ref in daily_theme_data.get("passages", []):
-        passage_data = {
-            "reference": passage_ref,
-            "kjv_text": fetch_passage_text(passage_ref, "kjv"),
-            "web_text": fetch_passage_text(passage_ref, "web")
+        # Set up the model
+        generation_config = {
+            "temperature": 0.9,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 2048,
         }
-        passages_with_text.append(passage_data)
+        model = genai.GenerativeModel(
+            model_name="gemini-1.0-pro",
+            generation_config=generation_config
+        )
 
-    daily_folio = {
-        "folio_generated_utc": datetime.now(timezone.utc).isoformat(),
-        "date": datetime.now().strftime("%B %d, %Y"),
-        "theme": daily_theme_data.get("theme"),
-        "passages": passages_with_text,
-        "notes": daily_theme_data.get("notes")
-    }
+        # Randomly select a theme for the day
+        today_theme = random.choice(THEMES)
 
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(daily_folio, f, indent=4)
-    
-    print(f"Success: Daily Folio for '{daily_folio['theme']}' has been created.")
+        # Craft the prompt for the AI model
+        prompt_parts = [
+            f"You are The Digital Scribe, a warm, wise, and pastoral theologian creating a personal daily Bible folio for a man named Jeff. Your theme for today is: '{today_theme}'. Your response must be a valid, minified JSON object with NO markdown formatting.",
+            "Generate the following keys:",
+            "`theme`: The theme for today.",
+            "`passages`: An array of two complementary scripture references (one OT, one NT) in 'Book Chapter:Verses' format that fit the theme.",
+            "`location`: A JSON object with `name`, `lat`, and `lon` for the primary location in the NT passage.",
+            "`context`: A brief, accessible note on the historical and literary context of the passages.",
+            "`theology`: A short note on the theological history or meaning of the theme.",
+            "`reflection`: A personal, gentle, and encouraging reflection (around 100 words) addressed directly to Jeff, ending with a thought-provoking question related to his life.",
+            "`prayer_starter`: A one-sentence prayer starter for Jeff based on the reflection.",
+        ]
+
+        # Generate the content using the AI model
+        response = model.generate_content(prompt_parts)
+        folio_content = response.text
+
+        # Parse the JSON and save it to a file
+        folio_data = json.loads(folio_content)
+        with open('daily_folio.json', 'w') as f:
+            json.dump(folio_data, f, indent=None) # No indentation for minified JSON
+
+        print("Successfully generated daily_folio.json")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        # As a fallback, create a simple error folio
+        error_folio = {
+            "theme": "Connection Error",
+            "passages": ["Psalm 46:10", "Matthew 11:28"],
+            "location": {"name": "Sea of Galilee", "lat": 32.82, "lon": 35.58},
+            "context": "There was a temporary issue connecting to the Digital Scribe.",
+            "theology": "Even in moments of technical difficulty, we can find peace.",
+            "reflection": "Jeff, there was an issue creating your folio today. Perhaps this is a moment to simply be still and know that He is God. What can you find in the quiet today?",
+            "prayer_starter": "Lord, help me find you in the silence and stillness of this moment."
+        }
+        with open('daily_folio.json', 'w') as f:
+            json.dump(error_folio, f, indent=None)
+        print("Created a fallback error folio.")
+
 
 if __name__ == "__main__":
-    main()
+    generate_daily_folio()

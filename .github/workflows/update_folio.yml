@@ -3,35 +3,38 @@ name: Prepare Daily Folio
 on:
   workflow_dispatch: # Allows manual running
   schedule:
-    # Runs at 07:00 UTC every day (4 AM Atlantic Standard Time)
+    # Runs at 07:00 UTC every day (adjust as needed)
     - cron: '0 7 * * *'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      
+      contents: write # Allows the workflow to commit changes
+
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: The Scribe prepares the Daily Folio
-        run: python scribe.py
+    - name: Run Scribe Script
+      env:
+        API_KEY: ${{ secrets.API_KEY }}
+      run: python scribe.py
 
-      - name: Commit and push the Daily Folio
-        run: |
-          git config --global user.name "The Digital Scribe"
-          git config --global user.email "actions@github.com"
-          git add daily_folio.json
-          # Only commit if the file has changed
-          git diff --staged --quiet || git commit -m "Prepare Folio for $(date -u +'%B %d, %Y')"
-          git push
+    - name: Commit and Push Daily Folio
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add daily_folio.json
+        git commit -m "Update daily folio for $(date -u +'%Y-%m-%d')" || echo "No changes to commit"
+        git push
