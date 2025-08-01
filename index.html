@@ -8,16 +8,16 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="manifest" href="manifest.json">
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com;">
+  
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org;">
+
   <style>
-    /* **UPDATED**: This new layout structure prevents the nav bar from disappearing on scroll */
     html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
     body { display: flex; flex-direction: column; background-color: #f7f3e9; color: #4a4e69; font-family: 'Georgia', serif; }
-    main { flex: 1; overflow-y: auto; /* Enables scrolling only in the main content area */ padding-bottom: 5rem; /* Space for the nav bar */ }
-    
+    main { flex: 1; overflow-y: auto; padding-bottom: 5rem; }
     .view { display: none; }
     .view.active { display: block; }
-    header, nav { flex-shrink: 0; } /* Prevents header/nav from shrinking */
+    header, nav { flex-shrink: 0; }
     nav { background-color: #4a4e69; color: #f7f3e9; }
     nav a.active { color: #d4a373; font-weight: bold; border-bottom: 2px solid #d4a373; }
     .animate-fadeIn { animation: fadeIn 0.8s ease-in-out forwards; }
@@ -71,7 +71,6 @@
     let BIBLE_DATA = null;
     let map = null;
 
-    // --- VIEW SWITCHING ---
     function switchView(viewId) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById(viewId).classList.add('active');
@@ -79,7 +78,6 @@
       document.getElementById(`nav-${viewId.split('-')[0]}`).classList.add('active');
     }
 
-    // --- Verse Parsing & Navigation ---
     function parseReference(refString) {
         const match = refString.match(/^(\d\s)?([\w\s]+?)\s(\d+):?(\d*)-?(\d*)$/);
         if (!match) return null;
@@ -91,7 +89,6 @@
     }
 
     function getVerseText(ref) {
-        // **UPDATED**: This new lookup is more flexible to prevent "Book not found" errors.
         const normalizedRefName = ref.bookName.toLowerCase().replace(/ /g, '');
         const book = BIBLE_DATA.books.find(b => b.name.toLowerCase().replace(/ /g, '') === normalizedRefName);
 
@@ -124,7 +121,7 @@
         switchView('library-view');
 
         setTimeout(() => {
-            const verseEl = document.getElementById(`verse-${bookName}-${chapter}-${verse}`);
+            const verseEl = document.getElementById(`verse-${bookName.replace(/ /g, '-')}-${chapter}-${verse}`);
             if (verseEl) {
                 verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 verseEl.style.backgroundColor = 'rgba(212, 163, 115, 0.5)'; // Highlight
@@ -133,7 +130,6 @@
         }, 100);
     }
 
-    // --- BIBLE LIBRARY LOGIC ---
     function populateBibleLibrary() {
         const bookSelect = document.getElementById('book-select');
         BIBLE_DATA.books.forEach((book, index) => {
@@ -166,13 +162,11 @@
         const chapter = book.chapters[chapIndex];
         let htmlContent = `<h3 class="font-bold text-lg mb-2">${book.name} ${chapter.chapter}</h3>`;
         chapter.verses.forEach(v => {
-            // Use the original book name for the ID to ensure consistency
-            htmlContent += `<p id="verse-${book.name}-${chapter.chapter}-${v.verse}"><strong>${v.verse}</strong> ${v.text}</p>`;
+            htmlContent += `<p id="verse-${book.name.replace(/ /g, '-')}-${chapter.chapter}-${v.verse}"><strong>${v.verse}</strong> ${v.text}</p>`;
         });
         bibleTextDiv.innerHTML = htmlContent;
     }
 
-    // --- DAILY FOLIO RENDERING ---
     function renderFolio(folio) {
       const folioDiv = document.getElementById('daily-folio');
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -240,7 +234,6 @@
       });
     }
 
-    // --- APP INITIALIZATION ---
     async function initializeApp() {
       try {
         const bibleResponse = await fetch('kjv.json');
