@@ -14,19 +14,16 @@ THEMES = [
     "The Shepherd and His Flock", "The Coming of the Holy Spirit"
 ]
 
-# --- Main function to generate the folio ---
 def generate_daily_folio():
     """
     Generates a daily folio JSON file using a generative AI model.
     """
     try:
-        # Configure the generative AI model with the API key from GitHub Secrets
         api_key = os.environ.get('API_KEY')
         if not api_key:
             raise ValueError("API_KEY environment variable not set.")
         genai.configure(api_key=api_key)
 
-        # Add safety settings to prevent overly aggressive blocking
         safety_settings = [
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
@@ -34,24 +31,16 @@ def generate_daily_folio():
             {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
         ]
 
-        # Set up the model with the new safety settings
-        generation_config = {
-            "temperature": 0.9,
-            "top_p": 1,
-            "top_k": 1,
-            "max_output_tokens": 2048,
-        }
-        # Using the correct, specific model name
+        generation_config = { "temperature": 0.9, "top_p": 1, "top_k": 1, "max_output_tokens": 4096 } # Increased tokens for the new model
+        
+        # **THE FIX**: Using the latest model to bypass potential legacy issues.
         model = genai.GenerativeModel(
-            model_name="gemini-1.0-pro",
+            model_name="gemini-1.5-flash",
             generation_config=generation_config,
             safety_settings=safety_settings
         )
 
-        # Randomly select a theme for the day
         today_theme = random.choice(THEMES)
-
-        # Craft the prompt for the AI model
         prompt_parts = [
             f"You are The Digital Scribe, a warm, wise, and pastoral theologian creating a personal daily Bible folio for a man named Jeff. Your theme for today is: '{today_theme}'. Your response must be a valid, minified JSON object with NO markdown formatting.",
             "Generate the following keys:",
@@ -64,15 +53,11 @@ def generate_daily_folio():
             "`prayer_starter`: A one-sentence prayer starter for Jeff based on the reflection.",
         ]
 
-        # Generate the content using the AI model
         response = model.generate_content(prompt_parts)
-
-        # Clean the response to ensure it's valid JSON
         folio_content = response.text
         if folio_content.strip().startswith("```json"):
             folio_content = folio_content.strip()[7:-3]
 
-        # Parse the JSON and save it to a file
         folio_data = json.loads(folio_content)
         with open('daily_folio.json', 'w') as f:
             json.dump(folio_data, f, indent=None)
@@ -81,7 +66,6 @@ def generate_daily_folio():
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        # As a fallback, create a simple error folio
         error_folio = {
             "theme": "Connection Error",
             "passages": ["Psalm 46:10", "Matthew 11:28"],
@@ -94,7 +78,6 @@ def generate_daily_folio():
         with open('daily_folio.json', 'w') as f:
             json.dump(error_folio, f, indent=None)
         print("Created a fallback error folio.")
-
 
 if __name__ == "__main__":
     generate_daily_folio()
