@@ -1,7 +1,6 @@
 import os
 import json
 import random
-import datetime
 import google.generativeai as genai
 
 # A list of themes for the AI to choose from.
@@ -27,7 +26,15 @@ def generate_daily_folio():
             raise ValueError("API_KEY environment variable not set.")
         genai.configure(api_key=api_key)
 
-        # Set up the model
+        # **UPDATED**: Add safety settings to prevent overly aggressive blocking
+        safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
+
+        # Set up the model with the new safety settings
         generation_config = {
             "temperature": 0.9,
             "top_p": 1,
@@ -36,7 +43,8 @@ def generate_daily_folio():
         }
         model = genai.GenerativeModel(
             model_name="gemini-1.0-pro",
-            generation_config=generation_config
+            generation_config=generation_config,
+            safety_settings=safety_settings  # Apply the safety settings here
         )
 
         # Randomly select a theme for the day
@@ -57,12 +65,22 @@ def generate_daily_folio():
 
         # Generate the content using the AI model
         response = model.generate_content(prompt_parts)
+
+        # **UPDATED**: Print the raw response for better debugging before trying to parse it
+        print("--- RAW AI RESPONSE ---")
+        print(response.text)
+        print("-----------------------")
+
         folio_content = response.text
+        # Clean the response to ensure it's valid JSON
+        # Sometimes the model wraps the JSON in ```json ... ```
+        if folio_content.strip().startswith("```json"):
+            folio_content = folio_content.strip()[7:-3]
 
         # Parse the JSON and save it to a file
         folio_data = json.loads(folio_content)
         with open('daily_folio.json', 'w') as f:
-            json.dump(folio_data, f, indent=None) # No indentation for minified JSON
+            json.dump(folio_data, f, indent=None)
 
         print("Successfully generated daily_folio.json")
 
