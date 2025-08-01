@@ -4,32 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cornerstone</title>
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com;">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <link rel="stylesheet" href="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.css](https://unpkg.com/leaflet@1.9.4/dist/leaflet.css)" />
+  <script src="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.js](https://unpkg.com/leaflet@1.9.4/dist/leaflet.js)"></script>
   <link rel="manifest" href="manifest.json">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' [https://cdn.tailwindcss.com](https://cdn.tailwindcss.com) [https://unpkg.com](https://unpkg.com);">
   <style>
     body { background-color: #f7f3e9; color: #4a4e69; font-family: 'Georgia', serif; }
     .view { display: none; }
     .view.active { display: block; }
     header, nav { background-color: #4a4e69; color: #f7f3e9; }
-    nav a.active { color: #d4a373; font-weight: bold; }
+    nav a.active { color: #d4a373; font-weight: bold; border-bottom: 2px solid #d4a373; }
     .animate-fadeIn { animation: fadeIn 0.8s ease-in-out forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .card { background: rgba(255, 255, 255, 0.95); border: 1px solid #d4a373; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
-    #map { height: 250px; width: 100%; margin-bottom: 1rem; border-radius: 8px; border: 1px solid #ccc; }
-    textarea { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-top: 1rem; }
+    .card { background: rgba(255, 255, 255, 0.95); border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+    #map { height: 200px; width: 100%; border-radius: 8px; border: 1px solid #ccc; }
+    .passage-card .reference { color: #8a5a44; cursor: pointer; text-decoration: underline; }
+    .passage-card .verse-text { line-height: 1.6; }
+    .prose h3 { margin-top: 1.25em; margin-bottom: 0.5em; font-weight: bold; }
     .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #4a4e69; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    #library-view select { width: 100%; padding: 8px; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
   <header class="p-4 text-center shadow-md">
     <h1 class="text-3xl font-bold">Cornerstone</h1>
-    <p class="text-sm">Jeff's Daily Connection</p>
+    <p class="text-sm">A Personal Folio for Jeff</p>
   </header>
 
   <main class="flex-1 p-4 pb-20">
@@ -39,27 +40,26 @@
     </div>
 
     <div id="folio-view" class="view animate-fadeIn">
-      <div id="daily-folio" class="card p-6">
+      <div id="daily-folio" class="space-y-6">
         </div>
     </div>
 
     <div id="library-view" class="view animate-fadeIn">
-      <div class="card p-4">
-        <h2 class="text-xl font-bold mb-4">Read the Bible</h2>
-        <div class="flex space-x-2 mb-4">
-            <select id="book-select" class="flex-1"></select>
-            <select id="chapter-select"></select>
+        <div class="card p-4">
+            <h2 class="text-xl font-bold mb-4">Read the Bible</h2>
+            <div class="flex space-x-2 mb-4">
+                <select id="book-select" class="flex-1 p-2 border rounded"></select>
+                <select id="chapter-select" class="p-2 border rounded"></select>
+            </div>
+            <div id="bible-text-container" class="prose max-w-none h-96 overflow-y-scroll p-2 border rounded">
+                </div>
         </div>
-        <div id="bible-text" class="prose max-w-none h-96 overflow-y-scroll p-2 border rounded">
-            Select a book and chapter to begin reading.
-        </div>
-      </div>
     </div>
   </main>
 
-  <nav class="flex justify-around p-2 fixed bottom-0 w-full shadow-inner z-10">
-    <a href="#" id="nav-folio" class="text-center text-xs py-2 px-4" onclick="switchView('folio-view')">Folio</a>
-    <a href="#" id="nav-library" class="text-center text-xs py-2 px-4" onclick="switchView('library-view')">Library</a>
+  <nav class="flex justify-around p-2 fixed bottom-0 w-full shadow-inner z-10" style="background-color: #4a4e69;">
+    <a href="#" id="nav-folio" class="text-center text-sm py-2 px-4" onclick="switchView('folio-view')">Folio</a>
+    <a href="#" id="nav-library" class="text-center text-sm py-2 px-4" onclick="switchView('library-view')">Library</a>
   </nav>
 
   <script>
@@ -74,16 +74,58 @@
       document.getElementById(`nav-${viewId.split('-')[0]}`).classList.add('active');
     }
 
-    // --- JOURNALING ---
-    function saveJournalEntry(date, text) {
-        localStorage.setItem(`journal_${date}`, text);
+    // --- NEW: Verse Parsing & Navigation ---
+    function parseReference(refString) {
+        const match = refString.match(/(\d\s)?([a-zA-Z\s]+)\s(\d+):?(\d*)-?(\d*)/);
+        if (!match) return null;
+        let bookName = ((match[1] || '') + match[2]).trim();
+        const chapter = parseInt(match[3], 10);
+        const startVerse = match[4] ? parseInt(match[4], 10) : 1;
+        const endVerse = match[5] ? parseInt(match[5], 10) : (match[4] ? startVerse : -1); // -1 for whole chapter
+        return { bookName, chapter, startVerse, endVerse };
     }
 
-    function getJournalEntry(date) {
-        return localStorage.getItem(`journal_${date}`) || "";
+    function getVerseText(ref) {
+        const book = BIBLE_DATA.books.find(b => b.name === ref.bookName);
+        if (!book) return '<p>Book not found.</p>';
+        const chapter = book.chapters.find(c => c.chapter === ref.chapter);
+        if (!chapter) return '<p>Chapter not found.</p>';
+        
+        let versesHtml = '';
+        const end = ref.endVerse === -1 ? chapter.verses.length : ref.endVerse;
+        for (let i = ref.startVerse; i <= end; i++) {
+            const verse = chapter.verses.find(v => v.verse === i);
+            if (verse) {
+                versesHtml += `<sup class="font-bold text-gray-500">${i}</sup> ${verse.text} `;
+            }
+        }
+        return `<p class="verse-text">${versesHtml.trim()}</p>`;
+    }
+    
+    function goToPassage(bookName, chapter, verse) {
+        const bookIndex = BIBLE_DATA.books.findIndex(b => b.name === bookName);
+        if (bookIndex === -1) return;
+        
+        document.getElementById('book-select').value = bookIndex;
+        document.getElementById('book-select').dispatchEvent(new Event('change'));
+        
+        document.getElementById('chapter-select').value = chapter;
+        document.getElementById('chapter-select').dispatchEvent(new Event('change'));
+        
+        switchView('library-view');
+
+        // Allow DOM to update before scrolling
+        setTimeout(() => {
+            const verseEl = document.getElementById(`verse-${bookName}-${chapter}-${verse}`);
+            if (verseEl) {
+                verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                verseEl.style.backgroundColor = '#d4a373'; // Highlight
+                setTimeout(() => { verseEl.style.backgroundColor = ''; }, 2000); // Remove highlight
+            }
+        }, 100);
     }
 
-    // --- BIBLE LIBRARY ---
+    // --- BIBLE LIBRARY LOGIC ---
     function populateBibleLibrary() {
         const bookSelect = document.getElementById('book-select');
         BIBLE_DATA.books.forEach((book, index) => {
@@ -92,125 +134,118 @@
             option.textContent = book.name;
             bookSelect.appendChild(option);
         });
-
         bookSelect.addEventListener('change', () => {
             const bookIndex = bookSelect.value;
             const chapterSelect = document.getElementById('chapter-select');
-            chapterSelect.innerHTML = ''; // Clear previous chapters
-            BIBLE_DATA.books[bookIndex].chapters.forEach((chap) => {
+            chapterSelect.innerHTML = '';
+            BIBLE_DATA.books[bookIndex].chapters.forEach(c => {
                 const option = document.createElement('option');
-                option.value = chap.chapter;
-                option.textContent = `Chapter ${chap.chapter}`;
+                option.value = c.chapter;
+                option.textContent = `Chapter ${c.chapter}`;
                 chapterSelect.appendChild(option);
             });
-            displayChapter(bookIndex, 0); // Display first chapter by default
+            displayChapter(bookIndex, 0);
         });
-
         document.getElementById('chapter-select').addEventListener('change', () => {
-            const bookIndex = bookSelect.value;
-            const chapIndex = document.getElementById('chapter-select').value - 1;
-            displayChapter(bookIndex, chapIndex);
+            displayChapter(bookSelect.value, document.getElementById('chapter-select').value - 1);
         });
-
-        // Initially populate chapters for Genesis
-        const chapterSelect = document.getElementById('chapter-select');
-        BIBLE_DATA.books[0].chapters.forEach((chap) => {
-                const option = document.createElement('option');
-                option.value = chap.chapter;
-                option.textContent = `Chapter ${chap.chapter}`;
-                chapterSelect.appendChild(option);
-        });
+        bookSelect.dispatchEvent(new Event('change'));
     }
 
     function displayChapter(bookIndex, chapIndex) {
-        const bibleTextDiv = document.getElementById('bible-text');
-        const chapter = BIBLE_DATA.books[bookIndex].chapters[chapIndex];
-        let htmlContent = `<h3 class="font-bold text-lg">${BIBLE_DATA.books[bookIndex].name} ${chapter.chapter}</h3>`;
+        const bibleTextDiv = document.getElementById('bible-text-container');
+        const book = BIBLE_DATA.books[bookIndex];
+        const chapter = book.chapters[chapIndex];
+        let htmlContent = `<h3 class="font-bold text-lg mb-2">${book.name} ${chapter.chapter}</h3>`;
         chapter.verses.forEach(v => {
-            htmlContent += `<p><strong>${v.verse}</strong> ${v.text}</p>`;
+            htmlContent += `<p id="verse-${book.name}-${chapter.chapter}-${v.verse}"><strong>${v.verse}</strong> ${v.text}</p>`;
         });
         bibleTextDiv.innerHTML = htmlContent;
     }
 
-    // --- DAILY FOLIO ---
+    // --- DAILY FOLIO RENDERING ---
     function renderFolio(folio) {
       const folioDiv = document.getElementById('daily-folio');
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      const journalEntry = getJournalEntry(today);
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const journalEntry = localStorage.getItem(`journal_${new Date().toISOString().split('T')[0]}`) || "";
 
+      let passageHtml = '';
+      folio.passages.forEach(refString => {
+        const ref = parseReference(refString);
+        if(ref) {
+            const verseText = getVerseText(ref);
+            passageHtml += `
+              <div class="card p-4 passage-card">
+                  <h4 class="font-bold text-lg reference" onclick="goToPassage('${ref.bookName}', ${ref.chapter}, ${ref.startVerse})">${refString}</h4>
+                  ${verseText}
+              </div>
+            `;
+        }
+      });
+      
       folioDiv.innerHTML = `
-        <h2 class="text-2xl font-bold mb-2">${folio.theme}</h2>
-        <p class="text-sm text-gray-500 mb-4">${today}</p>
-        
-        <h3 class="font-bold mt-4">Passages</h3>
-        <p>${folio.passages.join(' & ')}</p>
-
-        <h3 class="font-bold mt-4">Location</h3>
-        <div id="map"></div>
-
-        <h3 class="font-bold mt-4">Context</h3>
-        <p class="text-sm">${folio.context}</p>
-
-        <h3 class="font-bold mt-4">Theology</h3>
-        <p class="text-sm">${folio.theology}</p>
-
-        <h3 class="font-bold mt-4">Reflection for Jeff</h3>
-        <p class="italic">${folio.reflection}</p>
-
-        <h3 class="font-bold mt-4">Prayer Starter</h3>
-        <p class="text-sm">${folio.prayer_starter}</p>
-        
-        <h3 class="font-bold mt-4">My Reflection</h3>
-        <textarea id="journal-entry" rows="5" placeholder="Your thoughts...">${journalEntry}</textarea>
+        <div class="card p-6">
+            <h2 class="text-2xl font-bold mb-1">${folio.theme}</h2>
+            <p class="text-sm text-gray-500 mb-4">${today}</p>
+            ${passageHtml}
+        </div>
+        <div class="card p-6">
+            <h3 class="font-bold text-xl mb-2">Location</h3>
+            <div id="map"></div>
+        </div>
+        <div class="card p-6">
+            <h3 class="font-bold text-xl mb-2">Context & Theology</h3>
+            <p class="text-sm mb-2">${folio.context}</p>
+            <p class="text-sm italic">${folio.theology}</p>
+        </div>
+        <div class="card p-6">
+            <h3 class="font-bold text-xl mb-2">Reflection for Jeff</h3>
+            <p class="italic mb-4">${folio.reflection}</p>
+            <p class="text-sm"><strong class="font-bold">Prayer Starter:</strong> ${folio.prayer_starter}</p>
+        </div>
       `;
 
-      // Initialize map
-      if (folio.location && folio.location.lat) {
-        map = L.map('map').setView([folio.location.lat, folio.location.lon], 9);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-        L.marker([folio.location.lat, folio.location.lon]).addTo(map)
-            .bindPopup(folio.location.name)
-            .openPopup();
+      if (folio.deeper_dive) {
+        folioDiv.innerHTML += `
+        <div class="card p-6">
+          <h2 class="text-xl font-bold mb-2">The Scholar's Desk: A Deeper Dive</h2>
+          <div class="prose prose-sm max-w-none">${folio.deeper_dive.replace(/\n/g, '<br>')}</div>
+        </div>`;
       }
 
-      // Add event listener for journal saving
-      const journalTextarea = document.getElementById('journal-entry');
-      journalTextarea.addEventListener('input', () => {
-          saveJournalEntry(today, journalTextarea.value);
+      folioDiv.innerHTML += `
+        <div class="card p-6">
+            <h3 class="font-bold text-xl mb-2">My Reflection</h3>
+            <textarea id="journal-entry" rows="6" class="w-full p-2 border rounded" placeholder="Your thoughts...">${journalEntry}</textarea>
+        </div>
+      `;
+
+      if (folio.location && folio.location.lat) {
+        map = L.map('map').setView([folio.location.lat, folio.location.lon], 9);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+        L.marker([folio.location.lat, folio.location.lon]).addTo(map).bindPopup(folio.location.name).openPopup();
+      }
+
+      document.getElementById('journal-entry').addEventListener('input', (e) => {
+          localStorage.setItem(`journal_${new Date().toISOString().split('T')[0]}`, e.target.value);
       });
     }
 
-    // --- INITIALIZATION ---
+    // --- APP INITIALIZATION ---
     async function initializeApp() {
       try {
-        // Fetch Bible data first
         const bibleResponse = await fetch('kjv.json');
         BIBLE_DATA = await bibleResponse.json();
         populateBibleLibrary();
         
-        // Then fetch the daily folio
         const folioResponse = await fetch('daily_folio.json?cachebust=' + new Date().getTime());
         const folioData = await folioResponse.json();
         
         renderFolio(folioData);
-
       } catch (error) {
         console.error("Failed to load data:", error);
-        // Render a fallback error message if folio fails
-        renderFolio({
-            "theme": "Error Loading Folio",
-            "passages": ["Psalm 23:1", "John 14:1"],
-            "location": {"name": "Jerusalem", "lat": 31.77, "lon": 35.21},
-            "context": "Could not load today's reading.",
-            "theology": "God's presence is constant even when technology fails.",
-            "reflection": "Jeff, today's folio could not be loaded. This is a good moment to reflect on finding peace and connection even in imperfection. How can you see God's hand at work around you right now?",
-            "prayer_starter": "Lord, thank you for being present, even when things don't go as planned."
-        });
+        document.getElementById('loading-view').innerHTML = `<p class="text-red-500 p-4">Could not load today's folio. Please check the connection.</p>`;
       } finally {
-        // Hide loading view and show folio view
         document.getElementById('loading-view').classList.remove('active');
         switchView('folio-view');
       }
