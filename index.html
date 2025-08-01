@@ -4,16 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cornerstone</title>
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-  <link rel="stylesheet" href="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.css](https://unpkg.com/leaflet@1.9.4/dist/leaflet.css)" />
-  <script src="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.js](https://unpkg.com/leaflet@1.9.4/dist/leaflet.js)"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="manifest" href="manifest.json">
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' [https://cdn.tailwindcss.com](https://cdn.tailwindcss.com) [https://unpkg.com](https://unpkg.com);">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com;">
   <style>
-    body { background-color: #f7f3e9; color: #4a4e69; font-family: 'Georgia', serif; }
+    /* **UPDATED**: This new layout structure prevents the nav bar from disappearing on scroll */
+    html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+    body { display: flex; flex-direction: column; background-color: #f7f3e9; color: #4a4e69; font-family: 'Georgia', serif; }
+    main { flex: 1; overflow-y: auto; /* Enables scrolling only in the main content area */ padding-bottom: 5rem; /* Space for the nav bar */ }
+    
     .view { display: none; }
     .view.active { display: block; }
-    header, nav { background-color: #4a4e69; color: #f7f3e9; }
+    header, nav { flex-shrink: 0; } /* Prevents header/nav from shrinking */
+    nav { background-color: #4a4e69; color: #f7f3e9; }
     nav a.active { color: #d4a373; font-weight: bold; border-bottom: 2px solid #d4a373; }
     .animate-fadeIn { animation: fadeIn 0.8s ease-in-out forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -26,14 +31,14 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
   <header class="p-4 text-center shadow-md">
     <h1 class="text-3xl font-bold">Cornerstone</h1>
     <p class="text-sm">A Personal Folio for Jeff</p>
   </header>
 
-  <main class="flex-1 p-4 pb-20">
+  <main class="p-4">
     <div id="loading-view" class="view active text-center p-10">
       <div class="loading-spinner"></div>
       <p>Preparing the scriptures...</p>
@@ -45,19 +50,19 @@
     </div>
 
     <div id="library-view" class="view animate-fadeIn">
-        <div class="card p-4">
+        <div class="card p-4 h-full flex flex-col">
             <h2 class="text-xl font-bold mb-4">Read the Bible</h2>
             <div class="flex space-x-2 mb-4">
                 <select id="book-select" class="flex-1 p-2 border rounded"></select>
                 <select id="chapter-select" class="p-2 border rounded"></select>
             </div>
-            <div id="bible-text-container" class="prose max-w-none h-96 overflow-y-scroll p-2 border rounded">
+            <div id="bible-text-container" class="prose max-w-none flex-1 overflow-y-scroll p-2 border rounded">
                 </div>
         </div>
     </div>
   </main>
 
-  <nav class="flex justify-around p-2 fixed bottom-0 w-full shadow-inner z-10" style="background-color: #4a4e69;">
+  <nav class="flex justify-around p-2 w-full shadow-inner z-10" style="background-color: #4a4e69;">
     <a href="#" id="nav-folio" class="text-center text-sm py-2 px-4" onclick="switchView('folio-view')">Folio</a>
     <a href="#" id="nav-library" class="text-center text-sm py-2 px-4" onclick="switchView('library-view')">Library</a>
   </nav>
@@ -74,22 +79,25 @@
       document.getElementById(`nav-${viewId.split('-')[0]}`).classList.add('active');
     }
 
-    // --- NEW: Verse Parsing & Navigation ---
+    // --- Verse Parsing & Navigation ---
     function parseReference(refString) {
-        const match = refString.match(/(\d\s)?([a-zA-Z\s]+)\s(\d+):?(\d*)-?(\d*)/);
+        const match = refString.match(/^(\d\s)?([\w\s]+?)\s(\d+):?(\d*)-?(\d*)$/);
         if (!match) return null;
         let bookName = ((match[1] || '') + match[2]).trim();
         const chapter = parseInt(match[3], 10);
         const startVerse = match[4] ? parseInt(match[4], 10) : 1;
-        const endVerse = match[5] ? parseInt(match[5], 10) : (match[4] ? startVerse : -1); // -1 for whole chapter
+        const endVerse = match[5] ? parseInt(match[5], 10) : (match[4] ? startVerse : -1);
         return { bookName, chapter, startVerse, endVerse };
     }
 
     function getVerseText(ref) {
-        const book = BIBLE_DATA.books.find(b => b.name === ref.bookName);
-        if (!book) return '<p>Book not found.</p>';
+        // **UPDATED**: This new lookup is more flexible to prevent "Book not found" errors.
+        const normalizedRefName = ref.bookName.toLowerCase().replace(/ /g, '');
+        const book = BIBLE_DATA.books.find(b => b.name.toLowerCase().replace(/ /g, '') === normalizedRefName);
+
+        if (!book) return `<p>Book "${ref.bookName}" not found in KJV data.</p>`;
         const chapter = book.chapters.find(c => c.chapter === ref.chapter);
-        if (!chapter) return '<p>Chapter not found.</p>';
+        if (!chapter) return `<p>Chapter not found.</p>`;
         
         let versesHtml = '';
         const end = ref.endVerse === -1 ? chapter.verses.length : ref.endVerse;
@@ -103,7 +111,8 @@
     }
     
     function goToPassage(bookName, chapter, verse) {
-        const bookIndex = BIBLE_DATA.books.findIndex(b => b.name === bookName);
+        const normalizedBookName = bookName.toLowerCase().replace(/ /g, '');
+        const bookIndex = BIBLE_DATA.books.findIndex(b => b.name.toLowerCase().replace(/ /g, '') === normalizedBookName);
         if (bookIndex === -1) return;
         
         document.getElementById('book-select').value = bookIndex;
@@ -114,13 +123,12 @@
         
         switchView('library-view');
 
-        // Allow DOM to update before scrolling
         setTimeout(() => {
             const verseEl = document.getElementById(`verse-${bookName}-${chapter}-${verse}`);
             if (verseEl) {
                 verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                verseEl.style.backgroundColor = '#d4a373'; // Highlight
-                setTimeout(() => { verseEl.style.backgroundColor = ''; }, 2000); // Remove highlight
+                verseEl.style.backgroundColor = 'rgba(212, 163, 115, 0.5)'; // Highlight
+                setTimeout(() => { verseEl.style.backgroundColor = ''; }, 2000);
             }
         }, 100);
     }
@@ -158,6 +166,7 @@
         const chapter = book.chapters[chapIndex];
         let htmlContent = `<h3 class="font-bold text-lg mb-2">${book.name} ${chapter.chapter}</h3>`;
         chapter.verses.forEach(v => {
+            // Use the original book name for the ID to ensure consistency
             htmlContent += `<p id="verse-${book.name}-${chapter.chapter}-${v.verse}"><strong>${v.verse}</strong> ${v.text}</p>`;
         });
         bibleTextDiv.innerHTML = htmlContent;
